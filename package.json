@@ -1,0 +1,14 @@
+{
+  "name": "glatos-bot",
+  "private": true,
+  "scripts": {
+    "start": "node bot.js",
+    "dev": "nodemon bot.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "node-telegram-bot-api": "^0.64.0",
+    "openai": "^4.20.1",
+    "nodemon": "^3.0.2"
+  }
+}
