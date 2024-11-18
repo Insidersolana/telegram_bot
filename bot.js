@@ -39,7 +39,7 @@ function canRespond(chatId) {
 // Analyze if message warrants a response
 function shouldRespond(text) {
   text = text.toLowerCase();
-  return text.includes('@DEGEN') || text.includes('DEGEN');
+  return text.includes('@degen') || text.includes('degen');
 }
 
 // Handle incoming messages

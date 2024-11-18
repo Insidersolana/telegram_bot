@@ -1,5 +1,5 @@
 {
-  "name": "glatos-bot",
+  "name": "degen-bot",
   "private": true,
   "scripts": {
     "start": "node bot.js",
