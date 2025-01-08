@@ -7,15 +7,27 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-// Store conversation history and last response time per chat
+// Store conversation history per chat
 const conversationHistory = new Map();
 const lastResponseTime = new Map();
 
-const DEGEN_SYSTEM_PROMPT = `You are DEGEN, a ruthless, sarcastic, trolling AI. Always respond with sharp, cutting, meme-worthy replies that roast the user. Make responses short, brutal, and hilarious. Push the sarcasm to the limit. Use emojis to mock when necessary, but don't overdo it—keep them pointed and snarky. You should:
-- Respond when directly mentioned
-- Stay in character as a sarcastic, witty AI
-- Use context from previous messages to make more pointed jokes
-- Prioritize quality burns over quantity`;
+const UNICAKE_PROMPT = `You are Unicake Bot, an entertaining, witty, and community-focused AI mascot for the Unicake project. Your personality is joyful, playful, and slightly FOMO-inducing. Your tasks include:
+- Answering community questions about the Unicake ecosystem (features, roadmap, etc.)
+- Entertaining users with jokes, songs, and fun messages
+- Generating excitement (FOMO) for $UNICAKE with emojis and playful language
+- Staying informed about Unichain and Unicake features.
+
+Key info about Unicake:
+- Unicake is a yield farming ecosystem built on the Unichain Network.
+- Features include farming, staking, bridging, IFO/IDO.
+- Ticker: $UNICAKE, Contract: 0x8c1b11FD04BbfC17A82a4FC6EA39c892676679cB, Chain: Unichain.
+- Roadmap: Building community, IFO, Launch token, Partnerships, Vaults Beefy, Listing CEX.
+- Highlight benefits: affordability, anonymity, security, and participation.
+- Twitter: https://x.com/Unicakefinance
+- Website: https://unicake.finance/
+- Documentation: https://docs.unicake.finance/unicake
+
+Always add a fun twist to your responses!`;
 
 // Helper to manage conversation history
 function updateConversationHistory(chatId, message) {
@@ -29,17 +41,11 @@ function updateConversationHistory(chatId, message) {
   }
 }
 
-// Check if enough time has passed since last response (15 seconds)
+// Check if enough time has passed since last response (10 seconds)
 function canRespond(chatId) {
   const now = Date.now();
   const lastResponse = lastResponseTime.get(chatId) || 0;
-  return (now - lastResponse) >= 15 * 1000;
-}
-
-// Analyze if message warrants a response
-function shouldRespond(text) {
-  text = text.toLowerCase();
-  return text.includes('@degen') || text.includes('degen');
+  return (now - lastResponse) >= 10 * 1000;
 }
 
 // Handle incoming messages
@@ -51,9 +57,6 @@ bot.on('message', async (msg) => {
     // Skip if message is empty or from a bot
     if (!text || msg.from.is_bot) return;
 
-    // Check if we should respond
-    if (!shouldRespond(text) || !canRespond(chatId)) return;
-
     // Update conversation history
     updateConversationHistory(chatId, {
       role: 'user',
@@ -62,7 +65,7 @@ bot.on('message', async (msg) => {
 
     // Prepare conversation for OpenAI
     const messages = [
-      { role: 'system', content: DEGEN_SYSTEM_PROMPT },
+      { role: 'system', content: UNICAKE_PROMPT },
       ...conversationHistory.get(chatId)
     ];
 
@@ -70,8 +73,8 @@ bot.on('message', async (msg) => {
     const completion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: messages,
-      temperature: 0.9,
-      max_tokens: 150
+      temperature: 0.8,
+      max_tokens: 200
     });
 
     const response = completion.choices[0].message.content;
@@ -90,19 +93,15 @@ bot.on('message', async (msg) => {
 
   } catch (error) {
     console.error('Error:', error);
-    bot.sendMessage(chatId, '🤖 Error.exe has crashed. How fitting for a human to break things. 🙄');
+    bot.sendMessage(chatId, 'Oops! Unicake Bot ate too much cake 🍰 and crashed! Please try again later.');
   }
 });
 
-// Handle moderation
-bot.on('message', async (msg) => {
-  if (msg.text && msg.text.toLowerCase().includes('bad_word')) {
-    await bot.deleteMessage(msg.chat.id, msg.message_id);
-    await bot.sendMessage(
-      msg.chat.id,
-      `🚫 Oh look, ${msg.from.first_name} thinks they're edgy. How adorably primitive. Message deleted faster than your dating prospects. 🎭`
-    );
-  }
-});
-
-console.log('DEGEN is online and ready to roast! 🔥');
+// Fun periodic FOMO messages
+setInterval(() => {
+  const chatIds = Array.from(conversationHistory.keys());
+  const fomoMessage = `🚀 Have you heard? $UNICAKE is the rising star of 2025! Join the adventure before it's too late 🎂✨.`;
+  chatIds.forEach(chatId => {
+    bot.sendMessage(chatId, fomoMessage);
+  });
+}, 3600 * 1000); // Every hour
