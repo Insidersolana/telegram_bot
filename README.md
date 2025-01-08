@@ -1,4 +1,4 @@
-# degen Telegram Bot
+# unicake Telegram Bot
 
 A sarcastic, trolling moderation bot for Telegram.
 
@@ -13,6 +13,6 @@ A sarcastic, trolling moderation bot for Telegram.
 
 ## Usage
 
-- Tag the bot with @degen in your message to get a response
+- Tag the bot with @unicake in your message to get a response
 - The bot will automatically moderate messages containing banned words
 - The bot learns from conversation context to provide more relevant sarcastic responses

@@ -1,5 +1,5 @@
 {
-  "name": "degen-bot",
+  "name": "unicake-bot",
   "private": true,
   "scripts": {
     "start": "node bot.js",
