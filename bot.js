@@ -1,6 +1,7 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const OpenAI = require('openai');
+const axios = require('axios');
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 const openai = new OpenAI({
@@ -50,8 +51,23 @@ function canRespond(chatId) {
 
 // Check if the message is relevant to Unicake or social interactions
 function isRelevantMessage(text) {
-  const keywords = ['unicake', '$unicake', 'unichain', 'gm', 'gn', 'good morning', 'good night'];
+  const keywords = ['unicake', '$unicake', 'unichain', 'gm', 'gn', 'good morning', 'good night', 'price', 'token'];
   return keywords.some(keyword => text.toLowerCase().includes(keyword));
+}
+
+// Fetch token price from CoinGecko
+async function fetchTokenPrice(tokenId) {
+  try {
+    const response = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${tokenId}&vs_currencies=usd`);
+    if (response.data[tokenId] && response.data[tokenId].usd) {
+      return response.data[tokenId].usd;
+    } else {
+      throw new Error('Price not found');
+    }
+  } catch (error) {
+    console.error('Error fetching token price:', error);
+    return null;
+  }
 }
 
 // Handle incoming messages
@@ -62,6 +78,18 @@ bot.on('message', async (msg) => {
 
     // Skip if message is empty or from a bot
     if (!text || msg.from.is_bot) return;
+
+    // Check if user is asking for token price
+    if (text.toLowerCase().includes('price')) {
+      const tokenId = 'unicake'; // Replace with the CoinGecko ID for your token
+      const price = await fetchTokenPrice(tokenId);
+      if (price) {
+        await bot.sendMessage(chatId, `🎉 The current price of $UNICAKE is $${price.toFixed(2)} USD. Ready to farm? 🚀`);
+      } else {
+        await bot.sendMessage(chatId, `😅 Oops! I couldn't fetch the price of $UNICAKE right now. Try again later.`);
+      }
+      return;
+    }
 
     // Respond only if the message is relevant
     if (!isRelevantMessage(text)) return;
