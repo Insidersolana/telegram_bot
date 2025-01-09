@@ -134,7 +134,7 @@ bot.on('message', async (msg) => {
 
     // Get response from OpenAI
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-4o',
       messages: messages,
       temperature: 0.8,
       max_tokens: 150
