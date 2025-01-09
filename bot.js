@@ -48,6 +48,12 @@ function canRespond(chatId) {
   return (now - lastResponse) >= 10 * 1000;
 }
 
+// Check if the message is relevant to Unicake or social interactions
+function isRelevantMessage(text) {
+  const keywords = ['unicake', '$unicake', 'unichain', 'gm', 'gn', 'good morning', 'good night'];
+  return keywords.some(keyword => text.toLowerCase().includes(keyword));
+}
+
 // Handle incoming messages
 bot.on('message', async (msg) => {
   try {
@@ -57,14 +63,8 @@ bot.on('message', async (msg) => {
     // Skip if message is empty or from a bot
     if (!text || msg.from.is_bot) return;
 
-    // Check for FUD/crying mention
-    if (text.includes('@')) {
-      const taggedUser = text.match(/@\w+/g);
-      if (taggedUser) {
-        await bot.sendMessage(chatId, `😂 Oh no, ${taggedUser[0]} lost! Better luck next time, champ! 🥲🍰`);
-        return;
-      }
-    }
+    // Respond only if the message is relevant
+    if (!isRelevantMessage(text)) return;
 
     // Update conversation history
     updateConversationHistory(chatId, {
