@@ -1,6 +1,6 @@
 # unicake Telegram Bot
 
-A sarcastic, trolling moderation bot for Telegram.
+A bot Unicake.
 
 ## Setup
 
