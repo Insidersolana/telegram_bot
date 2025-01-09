@@ -55,12 +55,22 @@ function isRelevantMessage(text) {
   return keywords.some(keyword => text.toLowerCase().includes(keyword));
 }
 
+// Map emojis to tokens
+const tokenEmojis = {
+  unicake: '🎂',
+  pepe: '🐸',
+  bitcoin: '₿',
+  ethereum: '⚙️',
+  default: '✨'
+};
+
 // Fetch token price from CoinGecko
 async function fetchTokenPrice(tokenId) {
   try {
     const response = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${tokenId}&vs_currencies=usd`);
-    if (response.data[tokenId] && response.data[tokenId].usd) {
-      return response.data[tokenId].usd;
+    if (response.data[tokenId] && response.data[tokenId].usd !== undefined) {
+      const price = response.data[tokenId].usd;
+      return price >= 0.01 ? price.toFixed(2) : price.toFixed(8);
     } else {
       throw new Error('Price not found');
     }
@@ -68,6 +78,17 @@ async function fetchTokenPrice(tokenId) {
     console.error('Error fetching token price:', error);
     return null;
   }
+}
+
+// Extract token ID from user message
+function extractTokenId(text) {
+  const match = text.match(/price of ([a-zA-Z0-9-_]+)/i);
+  return match ? match[1].toLowerCase() : null;
+}
+
+// Get emoji for token
+function getTokenEmoji(tokenId) {
+  return tokenEmojis[tokenId] || tokenEmojis.default;
 }
 
 // Handle incoming messages
@@ -80,13 +101,18 @@ bot.on('message', async (msg) => {
     if (!text || msg.from.is_bot) return;
 
     // Check if user is asking for token price
-    if (text.toLowerCase().includes('price')) {
-      const tokenId = 'unicake'; // Replace with the CoinGecko ID for your token
-      const price = await fetchTokenPrice(tokenId);
-      if (price) {
-        await bot.sendMessage(chatId, `🎉 The current price of $UNICAKE is $${price.toFixed(2)} USD. Ready to farm? 🚀`);
+    if (text.toLowerCase().includes('price of')) {
+      const tokenId = extractTokenId(text);
+      if (tokenId) {
+        const price = await fetchTokenPrice(tokenId);
+        const emoji = getTokenEmoji(tokenId);
+        if (price) {
+          await bot.sendMessage(chatId, `💰 The current price of ${tokenId.toUpperCase()} ${emoji} is $${price} USD.`);
+        } else {
+          await bot.sendMessage(chatId, `😅 Sorry, I couldn't fetch the price for ${tokenId}. Maybe try another token?`);
+        }
       } else {
-        await bot.sendMessage(chatId, `😅 Oops! I couldn't fetch the price of $UNICAKE right now. Try again later.`);
+        await bot.sendMessage(chatId, `🤔 Please specify a token like this: "price of unicake"`);
       }
       return;
     }
