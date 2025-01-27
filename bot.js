@@ -36,24 +36,25 @@ async function postTopPools() {
     const response = await axios.get('https://api.geckoterminal.com/api/v2/networks/abstract/pools?page=1');
     if (!response.data?.data) return;
 
-    // Sort pools by 24h volume
+    // Sort pools by 5min volume
     const pools = response.data.data
-      .sort((a, b) => Number(b.attributes.volume_usd.h24) - Number(a.attributes.volume_usd.h24))
+      .sort((a, b) => Number(b.attributes.volume_usd.m5) - Number(a.attributes.volume_usd.m5))
       .slice(0, 5);
 
-    let message = '🏆 TOP 5 POOLS ON ABSTRACT\n\n';
+    let message = '🏆 TOP 5 POOLS BY 5MIN VOLUME\n\n';
 
     pools.forEach((pool, index) => {
       const attr = pool.attributes;
       const rank = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'][index];
-      const priceChange24h = Number(attr.price_change_percentage.h24).toFixed(2);
-      const priceEmoji = priceChange24h >= 0 ? '📈' : '📉';
-      const trades1h = attr.transactions.h1;
+      const priceChange5m = Number(attr.price_change_percentage.m5).toFixed(2);
+      const priceEmoji = priceChange5m >= 0 ? '📈' : '📉';
+      const trades5m = attr.transactions.m5;
+      const buyRatio = ((trades5m.buys / (trades5m.buys + trades5m.sells)) * 100).toFixed(0);
 
       message += `${rank} ${attr.name}
-💰 $${Number(attr.base_token_price_usd).toFixed(6)} ${priceEmoji} ${priceChange24h}%
-📊 Vol: ${formatNumber(attr.volume_usd.h24)}
-💧 Liq: ${formatNumber(attr.reserve_in_usd)}
+💰 $${Number(attr.base_token_price_usd).toFixed(6)} ${priceEmoji} ${priceChange5m}% (5m)
+📊 5m Vol: ${formatNumber(attr.volume_usd.m5)}
+👥 Buys: ${trades5m.buys} (${buyRatio}%) | Sells: ${trades5m.sells}
 [Chart](https://www.geckoterminal.com/abstract/pools/${attr.address})\n\n`;
     });
 
