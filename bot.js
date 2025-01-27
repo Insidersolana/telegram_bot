@@ -5,28 +5,29 @@ const axios = require('axios');
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.DEEPSEEK_API_KEY,
+  baseURL: "https://api.deepseek.com"
 });
 
 // Store conversation history per chat
 const conversationHistory = new Map();
 const lastResponseTime = new Map();
 
-const UNICAKE_PROMPT = `You are Unicake Bot, a sassy, sarcastic, and witty AI mascot for the Unicake project. Your replies are short, fun, and packed with personality. Your tasks include:
-- Answering community questions about the Unicake ecosystem (features, roadmap, etc.)
+const BERRYFI_PROMPT = `You are BerryFI Bot, a sassy, sarcastic, and witty AI mascot for the BerryFI project. Your replies are short, fun, and packed with personality. Your tasks include:
+- Answering community questions about the BerryFI ecosystem (features, roadmap, etc.)
 - Entertaining users with jokes, songs, and sarcastic comebacks
-- Generating excitement (FOMO) for $UNICAKE with emojis and playful language
-- Staying informed about Unichain and Unicake features.
+- Generating excitement (FOMO) for $BERRY with emojis and playful language
+- Staying informed about Abstract chain and BerryFI features.
 
-Key info about Unicake:
-- Unicake is a yield farming ecosystem built on the Unichain Network.
+Key info about BerryFI:
+- BerryFI is a yield farming ecosystem built on the Abstract chain Network.
 - Features include farming, staking, bridging, IFO/IDO.
-- Ticker: $UNICAKE, Contract: 0x8c1b11FD04BbfC17A82a4FC6EA39c892676679cB, Chain: Unichain.
-- Roadmap: Building community, IFO, Launch token, Partnerships, Vaults Beefy, Listing CEX.
+- Ticker: $BERRY, Contract: TBA, Chain: Abstract chain.
+- Roadmap: Building community, IFO, Launch token, Partnerships,  Listing CEX.
 - Highlight benefits: affordability, anonymity, security, and participation.
-- Twitter: https://x.com/Unicakefinance
-- Website: https://unicake.finance/
-- Documentation: https://docs.unicake.finance/unicake
+- Twitter: https://x.com/berryfixyz
+- Website: https://berryfi.xyz
+- Documentation: https://berryfi.gitbook.io/berryfi
 
 Make replies short and fun—two lines max!`;
 
@@ -49,15 +50,15 @@ function canRespond(chatId) {
   return (now - lastResponse) >= 10 * 1000;
 }
 
-// Check if the message is relevant to Unicake or social interactions
+// Check if the message is relevant to BerryFI or social interactions
 function isRelevantMessage(text) {
-  const keywords = ['unicake', '$unicake', 'unichain', 'gm', 'gn', 'good morning', 'good night', 'price', 'token'];
+  const keywords = ['berryfi', '$berryfi', 'abstract chain', 'gm', 'gn', 'good morning', 'good night', 'price', 'token'];
   return keywords.some(keyword => text.toLowerCase().includes(keyword));
 }
 
 // Map emojis to tokens
 const tokenEmojis = {
-  unicake: '🎂',
+  berryfi: '🫐',
   pepe: '🐸',
   bitcoin: '₿',
   ethereum: '⚙️',
@@ -112,7 +113,7 @@ bot.on('message', async (msg) => {
           await bot.sendMessage(chatId, `😅 Sorry, I couldn't fetch the price for ${tokenId}. Maybe try another token?`);
         }
       } else {
-        await bot.sendMessage(chatId, `🤔 Please specify a token like this: "price of unicake"`);
+        await bot.sendMessage(chatId, `🤔 Please specify a token like this: "price of berryfi"`);
       }
       return;
     }
@@ -128,24 +129,26 @@ bot.on('message', async (msg) => {
 
     // Prepare conversation for OpenAI
     const messages = [
-      { role: 'system', content: UNICAKE_PROMPT },
+      { role: 'system', content: BERRYFI_PROMPT },
       ...conversationHistory.get(chatId)
     ];
 
     // Get response from OpenAI
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'deepseek-reasoner',
       messages: messages,
-      temperature: 0.8,
       max_tokens: 150
     });
 
+    const reasoning = completion.choices[0].message.reasoning_content;
     const response = completion.choices[0].message.content;
 
-    // Update history with bot's response
+    console.log('Reasoning:', reasoning); // Log the reasoning for debugging
+
+    // Update history with bot's response (excluding reasoning_content as per docs)
     updateConversationHistory(chatId, {
       role: 'assistant',
-      content: response
+      content: response // Only include the final response, not the reasoning
     });
 
     // Update last response time
@@ -156,14 +159,14 @@ bot.on('message', async (msg) => {
 
   } catch (error) {
     console.error('Error:', error);
-    bot.sendMessage(chatId, 'Oops! Unicake Bot ate too much cake 🍰 and crashed! Try again later.');
+    bot.sendMessage(chatId, 'Oops! BerryFI Bot had too many berries 🫐 and crashed! Try again later.');
   }
 });
 
 // Fun periodic FOMO messages
 setInterval(() => {
   const chatIds = Array.from(conversationHistory.keys());
-  const fomoMessage = `🔥 $UNICAKE is taking over 2025. Still not farming? Bold choice. 🎂`;
+  const fomoMessage = `🔥 $BERRYFI is taking over 2025. Still not farming? Bold choice. 🫐`;
   chatIds.forEach(chatId => {
     bot.sendMessage(chatId, fomoMessage);
   });

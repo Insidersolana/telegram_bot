@@ -1,6 +1,6 @@
-# unicake Telegram Bot
+# berryFI Telegram Bot
 
-A bot Unicake.
+A bot berryFI.
 
 ## Setup
 
@@ -13,6 +13,6 @@ A bot Unicake.
 
 ## Usage
 
-- Tag the bot with @unicake in your message to get a response
+- Tag the bot with @berryFI in your message to get a response
 - The bot will automatically moderate messages containing banned words
 - The bot learns from conversation context to provide more relevant sarcastic responses
