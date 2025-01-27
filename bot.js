@@ -45,23 +45,16 @@ async function postTopPools() {
 
     pools.forEach((pool, index) => {
       const attr = pool.attributes;
-      const rank = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'][index];
-      const priceChange1h = Number(attr.price_change_percentage.h1).toFixed(2);
+      const rank = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'][index];
       const priceChange24h = Number(attr.price_change_percentage.h24).toFixed(2);
-      const priceEmoji1h = priceChange1h >= 0 ? '📈' : '📉';
-      const priceEmoji24h = priceChange24h >= 0 ? '📈' : '📉';
+      const priceEmoji = priceChange24h >= 0 ? '📈' : '📉';
       const trades1h = attr.transactions.h1;
-      const buyRatio = ((trades1h.buys / (trades1h.buys + trades1h.sells)) * 100).toFixed(0);
 
       message += `${rank} ${attr.name}
-💰 Price: $${Number(attr.base_token_price_usd).toFixed(6)}
-${priceEmoji1h} 1h: ${priceChange1h}% | ${priceEmoji24h} 24h: ${priceChange24h}%
-💎 Market Cap: ${formatNumber(attr.fdv_usd)}
-💧 Liquidity: ${formatNumber(attr.reserve_in_usd)}
-📊 Volume 24h: ${formatNumber(attr.volume_usd.h24)}
-👥 1h Trades: 🟢 ${trades1h.buys} (${buyRatio}%) | 🔴 ${trades1h.sells}
-⏰ Created: ${getRelativeTime(attr.pool_created_at)}
-🔗 [Chart](https://www.geckoterminal.com/abstract/pools/${attr.address})\n\n`;
+💰 $${Number(attr.base_token_price_usd).toFixed(6)} ${priceEmoji} ${priceChange24h}%
+📊 Vol: ${formatNumber(attr.volume_usd.h24)}
+💧 Liq: ${formatNumber(attr.reserve_in_usd)}
+[Chart](https://www.geckoterminal.com/abstract/pools/${attr.address})\n\n`;
     });
 
     message += '🔄 Updates every 5 minutes';
